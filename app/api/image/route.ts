@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs'
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { checkApiLimit, increaseApiLimit } from '@/lib/api-limit'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // defaults to process.env["OPENAI_API_KEY"]
@@ -18,12 +19,16 @@ export async function POST(req: Request) {
     if (!amount) return new NextResponse('Amount is  required', { status: 400 })
     if (!resolution)
       return new NextResponse('Resolution is  required', { status: 400 })
+    const freeTrial = await checkApiLimit()
+    if (!freeTrial)
+      return new NextResponse('Free trial limit reached', { status: 403 })
 
     const response = await openai.images.generate({
       prompt,
       size: resolution,
       n: parseInt(amount, 10),
     })
+    await increaseApiLimit()
     return NextResponse.json(response.data)
   } catch (error) {
     console.log('[IMAGE_ERROR]', error)
