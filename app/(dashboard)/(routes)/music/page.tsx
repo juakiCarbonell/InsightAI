@@ -15,8 +15,10 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Empty } from '@/components/Empty'
 import { Loader } from '@/components/Loader'
+import { useProModal } from '@/hooks/useProModal'
 
 const MusicPage = () => {
+  const proModal = useProModal()
   const [music, setMusic] = useState<string>()
   const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
@@ -34,9 +36,10 @@ const MusicPage = () => {
       const response = await axios.post('/api/music', values)
       setMusic(response.data.audio)
       form.reset()
-    } catch (error) {
-      //TODO: open pro modal
-      console.log(error)
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        proModal.onOpen()
+      }
     } finally {
       router.refresh()
     }

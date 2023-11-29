@@ -20,9 +20,11 @@ import { cn } from '@/lib/utils'
 import { UserAvatar } from '@/components/UserAvatar'
 import { BotAvatar } from '@/components/BotAvatar'
 import ReactMarkdown from 'react-markdown'
+import { useProModal } from '@/hooks/useProModal'
 
 const CodePage = () => {
   const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([])
+  const proModal = useProModal()
   const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,9 +47,10 @@ const CodePage = () => {
       })
       setMessages((prev) => [...prev, userMessage, response.data])
       form.reset()
-    } catch (error) {
-      //TODO: open pro modal
-      console.log(error)
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        proModal.onOpen()
+      }
     } finally {
       router.refresh()
     }
@@ -144,7 +147,7 @@ const CodePage = () => {
                   }}
                   className='text-sm overflow-hidden leading-7'
                 >
-                  {message.content as string || ''}
+                  {(message.content as string) || ''}
                 </ReactMarkdown>
               </div>
             ))}
