@@ -7,10 +7,17 @@ import { useProModal } from '@/hooks/useProModal'
 
 interface FreeCounterProps {
   apiLimitCount: number
+  isPro: boolean
 }
 
-export const FreeCounter = ({ apiLimitCount }: FreeCounterProps) => {
+export const FreeCounter = ({
+  apiLimitCount,
+  isPro = false,
+}: FreeCounterProps) => {
   const proModal = useProModal()
+
+  if (isPro) return null
+
   return (
     <div className='px-3'>
       <Card className='bg-white/10 border-0'>
@@ -24,7 +31,11 @@ export const FreeCounter = ({ apiLimitCount }: FreeCounterProps) => {
               value={(apiLimitCount / MAX_FREE_COUNTS) * 100}
             />
           </div>
-          <Button className='w-full' variant='premium' onClick={proModal.onOpen}>
+          <Button
+            className='w-full'
+            variant='premium'
+            onClick={proModal.onOpen}
+          >
             Upgrade
             <Zap className='w-4 h-4 ml-2 fill-white' />
           </Button>
